@@ -1,0 +1,142 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "Ivana Ye"
+date: 'March 15, 2020'
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: no
+---
+
+```{r}
+library(tidyverse)
+library(formatR)
+library(readxl)
+library(cluster)
+```
+
+```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+1. Introduction
+
+The first dataset, global_mortality, gives the percent of different types of causes of mortality for every country from the years 1990 to 2016. The variables include the country, year, percent of Cardiovascular diseases, Cancers, Respiratory diseases, Diabetes, Dementia, Lower Respiratory Infections, Neonatal deaths, Diarrheal diseases, Road Accidents, Liver disease, Tuberculosis, Kidney disease, Digestive diseases, HIV/AIDS, Suicide, Malaria, Homicide, Nutrional deficiencies, Meningitis, Protein-energy malnutrition, Drowning, Maternal deaths, Parkinson disease, Alcohol disorders, Intestinal infectious diseases, Drug disorders, Hepatitis, Fire, Heat-related (hot and cold exposure), Natural disasters, Conflict, and Terrorism. The second dataset, week13_alcohol_global, gives the number of different types of alochol served as well as total litres of alcohol consumed for every country in 2010. The variables include beer servings, spirit servings, wine servings, and total litres of pure alcohol. 
+
+Both the datasets were downloaded from https://github.com/rfordatascience/tidytuesday. I'm interested in the global_mortality dataset because I've always wanted to know the top causes of deaths around the world. I knew one would be Cardiovascular disease but not really the other top causes. I'm interested in the week13_alcohol_global dataset because of the wide range of the amount of drink consumptions in different countries. Some countries don't consume any alochol, while others consume much more than the USA, like Venezuela. I thought countries on average would consume about the same; however, this dataset proved that that was not the case. I think that there will be an association between total litres of alcohol consumption and alcohol and drug disorders, cardiovascular disease, digestive diseases, and liver disease.   
+
+
+2. Tidying: Rearranging Wide/Long
+```{r}
+week13_alcohol_global<-read.csv("week13_alcohol_global.csv")
+global_mortality <- read_excel("global_mortality.xlsx")
+glimpse(week13_alcohol_global)
+glimpse(global_mortality)
+
+week13_alcohol_global%>% pivot_longer(cols=c("beer_servings","spirit_servings","wine_servings"), names_to="Types of Alcohol Served", values_to="Number of Alcoholic Servings")
+
+global_mortality %>% pivot_wider(names_from = year, values_from= `Cardiovascular diseases (%)`)
+```
+
+Since my two datasets were already tidy, I used pivot_longer and pivot_wider to untidy my data to show the use of both functions. First, I used pivot_longer to create more rows. I created a column called Types of Alcohol Served that have the names from the beer_servings, wine_servings, and spirit_servings column. The values from those three columns, I put into a column called Number of Alcoholic Servings. This caused the removal of the original beer_servings, spirit_servings, and wine_serings columns. Second, I used the pivot_wider to create more columns. The names came from the diffrent years, meaning that there is a column for every single year in the original table. The values for the columns came from the Cardiovascular disease (%) column, meaning that there is no longer a Cardiovascular disease column. 
+
+3. Joining/Merging
+```{r}
+new_global_mortality <- global_mortality%>%filter(year==2010)
+glimpse(new_global_mortality)
+joined_data <- new_global_mortality %>% left_join(week13_alcohol_global)
+nrow(joined_data)
+nrow(new_global_mortality)
+```
+
+Before joining, I created a new dataset called new_global_mortality, which filtered the global_mortality dataset by the year 2010, so that I would eventually be able to join both my datasets by the variable country(eliminates the duplicate year countries in my global_mortality dataset). I chose the year 2010 because my week13_alcohol_global dataset values were from the year 2010. After I did that, I joined my two datasets by country with left join. I wanted to do left join because it kept all the rows from my new_global_mortality dataset and added in rows with matches from the week13_alcohol_global dataset. The reason for this is because I was more interested in the countries that were present in the new_global_mortality dataset. The result was my joined data having the same number of rows as my new_global_mortality dataset. This can be seen by nrows(joined_data) and nrows(new_global_mortality) having 228 rows.The cases that were dropped were the ones in the week13_alcohol_global dataset that didn't have the same countries as the ones in the new_global_mortality dataset. A potential problem with this is that countries in the week13_alcohol_global dataset would be lost and not accounted for in the rest of the digesting and exploring of my data. 
+
+4. Wrangling 
+```{r}
+glimpse(joined_data)
+joined_data %>% filter(country == "Congo") %>% select(wine_servings,-country_code) 
+joined_data%>% arrange(desc(beer_servings)) 
+joined_data%>% summarize(var_cardiovascular_disease=var(`Cardiovascular diseases (%)`, na.rm=T), n(), n_distinct(spirit_servings))
+joined_data %>% mutate(beer_proportion = beer_servings/(beer_servings + spirit_servings + wine_servings))%>% na.omit()
+joined_data %>% summarize_if(is.numeric, list(min=min,max=max), na.rm=T)
+joined_data %>% summarize_if(is.numeric, list(Q3=quantile), probs=.75, na.rm=T)
+joined_data %>% summarize (sd_tot=sd(total_litres_of_pure_alcohol, na.rm=T) ,n=n(), se_tot=sd_tot/sqrt(n)) 
+joined_data%>% mutate(beer_servings_cat = case_when(beer_servings >100 ~ "high",
+beer_servings<100 ~ "low"))%>% na.omit() %>% group_by(beer_servings_cat)%>%  
+  summarize_at(c("Cancers (%)","Drowning (%)","Tuberculosis (%)"), mean, na.rm=T) 
+joined_data%>% mutate(beer_servings_cat = case_when(beer_servings >100 ~ "high",
+beer_servings<100 ~ "low"))%>% na.omit() %>% group_by(beer_servings_cat)%>%  
+  summarize_at(c("Cancers (%)","Drowning (%)","Tuberculosis (%)"), sd, na.rm=T)
+df <- joined_data %>% na.omit%>% select (-year) %>% select_if(is.numeric)
+cor(df)
+```
+
+When filtering by Country for Congo and selecting for the number of wine servings for that country, Congo had 9 wine servings in 2010. While arranging, in descending order, for the numeric variable, beer_servings, the highest was 376, which belonged to Namibia, and the lowest was 0, which belonged to Afghanistan, Bangladesh, and more. Using the summarize function, the variance in the percent of cardiovascular disease is 183.1352, there are 248 observations of the variances, and there are 99 unique values for the numeric variable spirit_servings. With the mutate function, the variable beer_proportion, which calculated the number of beers served in relation to the other alcoholic beverages of spirit and wines, was created. For example, in Albania, out of the beers, spirits, and wines served in 2010, 32.364% were beers served. Meanwhile, in Yemen, they served 100% beers. With the summarize_if function, minimums and maximums of all the numeric variables were found. For example, the minimum percentage of HIV/AIDS is 0.00614%, while the maximum percentage is 49.6379%. The minimum percentage of cardiovascular diseases is 5.2953%, while the maximum is 64.7804%. As can be seen, HIV/AIDS has a lower minimum and maximum percentage as compared to cardiovascular diseases. Moreover, the summarize_if function allowed for the calculation of Q3, the number for which 75% of the data Is less than that number. For example, the Q3 for spirit_servings was 118 spirits, while the Q3 for wine servings happened to be lower, with 59 wines. The summarize function also gave the standard errors(se). For example, the se of the total litres of pure alcohol was 0.2396, which means that the range/spread/deviation of total alcohol is not that great between the countries in the dataset. 
+
+In order to group by a categorical variable, beer_servings_cat, was created from the numeric variable beer_servings to use summarize_at to find mean and standard deviation. In the high beer_servings_cat category, which was classified as above 100  beers, the mean percent of cancers, drowning, and tuberculosis was 21.1437%, 0.4711 %, and 0.7817%, respectively. In the low beer_servings_cat category, which was classified as below 100 beers, the mean percent of cancers, drowning, and tuberculosis was 10.9606%, 0.7078%, and 2.8600%, respectively. Moreover, in the high beer_servings_cat category, the standard deviation  of percent of cancers, drowning, and tuberculosis was 7.3624, 0.4056, and 1.3254, respectively. In the low beer_servings_cat category, the standard deviation of the percent of cancers, drowning, and tuberculosis was 6.6642, 0.4253, and 2.8830, respectively. The mean and standard deviation was the greatest in both categories, high and low, for cardiovascular diseases. A correlation matrix of all the numeric variables was created with the function cor(). A high correlation of 0.9071 was found between percent of  Parkinson’s disease and cancer, while a low correlation of -0.5613 was found between the percent of Dementia and Diarrheal Diseases. A low correlation of -0.6001 was also found between percent of Parkinson disease and tuberculosis. Meanwhile there is a strong correlation of 0.6582 between percent of cancers and wine servings. 
+
+
+5. Visualizing 
+```{r fig.height=8}
+df%>%select_if(is.numeric)%>%cor%>%as.data.frame%>%
+rownames_to_column%>%pivot_longer(-1)%>%
+ggplot(aes(rowname,name,fill=value))+geom_tile()+ 
+#geom_text(aes(label=round(value,2)))+
+xlab("")+ylab("")+ theme(axis.text.x = element_text(angle=90, hjust=1))
+
+1.
+joined_data%>% mutate(beer_servings_cat = case_when(beer_servings >300 ~ "high", 100<=beer_servings & beer_servings<=300 ~ "med",beer_servings<100 ~ "low"))%>% na.omit() %>% group_by(beer_servings_cat)%>% ggplot(aes(x=`Cardiovascular diseases (%)`, y=`Road accidents (%)`, color=beer_servings_cat))+geom_point()+ scale_x_continuous(breaks=seq(0, 100, 5))
+
+2.
+newcountry <- joined_data%>% filter(between(total_litres_of_pure_alcohol,3,6))%>% mutate(wine_servings_cat = case_when(wine_servings >7 ~ "high", 5<=wine_servings & wine_servings<=7 ~ "med",wine_servings<5 ~ "low"))%>% na.omit() %>% group_by(wine_servings_cat)
+ggplot(newcountry, aes(x = country ,y= beer_servings))+
+  geom_bar(aes(fill=wine_servings_cat), stat="summary", fun.y="mean") + ggtitle("Countries Wine and Beer Servings")+ scale_y_continuous(name='Average Number of Beer Servings in 2010', breaks=seq(0,150,25))+ scale_fill_brewer(palette='Pastel2')+ theme(axis.text.x = element_text(angle=90, hjust=1))
+```
+
+In the correlation heat map, there seems to be more areas of strong than weak correlation. For example, percent of dementia and wine servings happen to be strongly positively correlated, with the correlation co-efficient being close to 1. There is also a strong positive correlation between percent of protein-energy malnutrition and nutritional deficiencies. A strong positive correlation can also be seen between percent of maternal deaths and diarrheal diseases, surprisingly. There are also strong negative correlations, like between percent of cardiovascular diseases and meningitis, which has a correlation co-efficient of around -0.5. Weak correlations of around 0 can be seen between percent of spirit servings and kidney diseases as well as percent of road accidents and natural disasters. 
+The first plot is a scatterplot showing the relationship of percent road accidents and cardiovascular diseases while being colored by beer_servings_cat of low (less than 100 beers), medium (between 100 and 300 beers), and high (more than 300 beers). From the plot, there does not seem to be a correlation between the two variables of percent road accidents and cardiovascular diseases because of the random, nonlinear dispersal of dots. However, there seems to be a clump of low beer servings that are associated with a lower percent of cardiovascular diseases and road accidents. Moreover, there are outliers of low beer servings being associated with high percent of road accidents and mid percent of cardiovascular disease. Otherwise the low beer servings are mainly evenly spread throughout low to high percent cardiovascular disease and low to mid percent of road accidents. Medium beer servings looks to be pretty spread out in the low percent of road accidents and low to high percent of cardiovascular disease as well. However, there is a bigger clump at the low percent of road accidents and mid percent of cardiovascular disease. Meanwhile, high beer servings is evenly spread out and associated with low percent of road accidents and low to high percent of cardiovascular diseases. No noticeable clumps, higher concentration, can be seen in one area of the graph for high beer servings category. 
+
+The second plot is a bar-chart showing different countries and the average number of beers they served in 2010, with the bars filled by wine_servings_cat of low(less than 5 wines), medium(5 to 7 wine), and high (more than 7 wines). Based on the countries in observation, there happens to be more countries with high wine servings and less countries with medium wine servings. However, there is a higher percent of countries with lower beer servings (less than 100) than higher beer servings (over 100). Out of the countries with medium wine servings, Mexico has the highest average number of beer servings and Burkina Faso has the lowest. Out of the countries with high wine servings, Angola has the highest average number of beer servings while Armenia has the lowest. Out of the countries with low wine servings, Ecuador has the highest average number of beer servings while Haiti has the lowest average number of beer servings. Overall, the variance in beer servings with the countries being separated by number of wine servings (low, medium, and high) seems to be almost the same (low variance). With closer observation, the medium wine servings category could be seen to have the highest variance though. 
+
+6. Dimensionality Reduction 
+```{r}
+clust_dat<-joined_data%>%dplyr::select_if(is.numeric) %>% select (-year)%>% na.omit()
+
+sil_width<-vector() 
+for(i in 2:10){
+  kms <- kmeans(clust_dat,centers=i) 
+  sil <- silhouette(kms$cluster,dist(clust_dat)) 
+  sil_width[i]<-mean(sil[,3])
+}  
+  ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)
+  
+library(GGally)
+pam1 <- clust_dat %>% pam(k=2)
+pam1
+  
+pamclust<-clust_dat %>% mutate(cluster=as.factor(pam1$clustering))
+pamclust %>% group_by(cluster) %>% summarize_if(is.numeric,mean,na.rm=T)
+  
+joined_data[pam1$id.med,]
+
+  
+clust_dat%>%mutate(cluster=pam1$clustering)%>%rename_all(function(x)sub("_", ".", x))%>%
+group_by(cluster)%>%mutate(n=n())%>%group_by(cluster,n)%>%
+summarize_at(2:5,.funs = list("mean"=mean,"median"=median,"sd"=sd),na.rm=T)%>%
+pivot_longer(contains("_"))%>%separate(name,sep="_",into=c("variable","stat"))%>%
+pivot_wider(names_from = "variable",values_from="value")%>%arrange(stat)
+
+plot(pam1,which=2)
+```
+
+The number of clusters for my joined_data dataset, which was two(k=2), was chosen with the use of a Silhouette Width plot. I first created a clust_dat vector to select for only the numeric variables, and then I did a silhouette width ggplot with that vector. The highest point,peak, on the graph was 2, so I went with that for the number of clusters to use. Then I ran my cluster analysis by piping pam(k=2) to my clust_dat dataset. After that, I found the means for each variable in the 2 clusters with the summarize_if function. For example, the mean in the first cluster for percent of dementia was 2.5180% in the first cluster, while it was 5.5661% in the second cluster. For Dementia specifically, the mean percent is greater in the second cluster than the first cluster. The final medoids, which show which countries with their numeric variable values were most representative of the two clusters, were found with the joined_data[pam1$id.med,] code. India is the most representative for the first cluster, while Brunei is most representative for the second cluster. Then, I did summary statistics for 4 of my numeric variables (percent of cancers, respiratory diseases, diabetes, and dementia) by cluster. The first cluster ,overall, has lower average and midpoint of percent cancer, respiratory diseases, diabetes, and dementia. The second cluster ,overall, has higher average and midpoint of percent of cancer, respiratory diseases, diabetes, and dementia. 
+
+Afterwards, I did a visualization of the two clusters with the ggpairs() function on the four variables (percent of cancers, respiratory diseases, diabetes, and dementia) I chose to do summary statistics for. For the first cluster (red), the highest correlation of 0.855 is seen between the percent of dementia and percent of cancers This can be seen by the positive linearly correlated red dots on the scatterplot of the two numeric variables. The rest of the correlations in the first cluster appear to be weak by the random scattering of the plots as well as the correlation values being less than -0.300 or 0.300.  For the second cluster (turquoise), the highest correlation of 0.785 is seen, again, between the percent of dementia and cancers. This can once again be seen by the positive linearly correlated turquoise dots on the scatterplot of the two variables. Interestingly, in the first cluster, the correlation of percent of respiratory diseases and cancers was low, with a weak 0.269 correlation. However, in the second cluster, the correlation between those two numeric variables was 0.641, which is a moderately strong positive correlation. Moreover, in the first cluster, the correlation of the percent of dementia and respiratory diseases was low, with a weak 0.199 correlation. However, in the second cluster, the correlation between those two numeric variables was 0.663, which is, again, a moderately strong positive correlation. Overall, in consideration of the first and second clusters, the percent of dementia and cancers has a 0.86 correlation, which is a strong positive correlation. That was the only significantly high correlation found through PAM clustering of the selected four numeric variables in my dataset. The clusters are seen most distinctly in the scatterplots for me because I can see the clustering of the dots. An average silhouette width plot was created using the plot() function to show how good the cluster solutions were in terms of the average silhouette width. The average silhouette width of 0.48 obtained shows that the structure is weak and could be artificial. 
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

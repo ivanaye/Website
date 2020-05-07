@@ -1,0 +1,5 @@
+]0;/stor/home/iy647/Website]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ [K]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git --version
+git version 2.17.1
+]0;/stor/home/iy647/Website]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git [K[K[K[Kgit init
+Initialized empty Git repository in /stor/home/iy647/Website/.git/
+]0;/stor/home/iy647/Website]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git add .
