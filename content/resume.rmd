@@ -3,9 +3,5 @@ title: "Resume"
 output: html_document
 ---
 
-```{include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 <a href="/resume.pdf" target="_blank">resume</a>
 
