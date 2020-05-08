@@ -4,4 +4,3 @@ output: html_document
 ---
 
 <a href="/resume.pdf" target="_blank">resume</a>
-
