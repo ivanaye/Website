@@ -414,3 +414,32 @@ remote: Resolving deltas:   0% (0/10)[Kremote: Resolving deltas:  10% (1/10)[
 To https://github.com/ivanaye/Website.git
    e676ef5..da5f06b  master -> master
 ]0;/stor/home/iy647/Website]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git add .
+]0;/stor/home/iy647/Website]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git commit -m "eight commit"
+[master 816d7d3] eight commit
+ Committer: Ivana Ye <iy647@educcomp03.ccbb.utexas.edu>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 28 insertions(+)
+]0;/stor/home/iy647/Website]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git push origin master
+Username for 'https://github.com': ivaany   naye
+Password for 'https://ivanaye@github.com': 
+Counting objects: 6, done.
+Delta compression using up to 32 threads.
+Compressing objects:  16% (1/6)   Compressing objects:  33% (2/6)   Compressing objects:  50% (3/6)   Compressing objects:  66% (4/6)   Compressing objects:  83% (5/6)   Compressing objects: 100% (6/6)   Compressing objects: 100% (6/6), done.
+Writing objects:  16% (1/6)   Writing objects:  33% (2/6)   Writing objects:  50% (3/6)   Writing objects:  66% (4/6)   Writing objects:  83% (5/6)   Writing objects: 100% (6/6)   Writing objects: 100% (6/6), 686 bytes | 686.00 KiB/s, done.
+Total 6 (delta 2), reused 0 (delta 0)
+remote: Resolving deltas:   0% (0/2)[Kremote: Resolving deltas:  50% (1/2)[Kremote: Resolving deltas: 100% (2/2)[Kremote: Resolving deltas: 100% (2/2), completed with 2 local objects.[K
+To https://github.com/ivanaye/Website.git
+   da5f06b..816d7d3  master -> master
+
+[K]0;iy647@educcomp03: ~/Website[01;32miy647@educcomp03[00m:[01;34m~/Website[00m$ git add .
