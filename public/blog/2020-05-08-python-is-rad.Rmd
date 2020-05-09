@@ -1,0 +1,56 @@
+---
+title: "Python is Rad!!"
+author: "Ivana Ye"
+date: '2020-05-08'
+description: ''
+slug: python-is-rad
+tags: []
+categories: []
+---
+
+In the last semester of my undergraduate career, I got into the knitty gritty of R Studio thanks to my computational biology and bioinformatics class, and man was it so cool and informative! Within the last bits of the class, I have learned that in programming, softwares like R Studio and Python, are able to talk to each other in chunks with the help of reticulate. Reticulate is accessed through the reticulate package in R. As a future health professional, I thought this was extremely analogical to my future self having a translator to help me out with patients that speak in a language that I'm not familiar with. Essentially, reticulate is like the translator. With reticulate, something like this is how I would introduce myself to my patients: 
+
+```{r}
+library(reticulate)
+one <- "Hello!"
+```
+
+```{python}
+two = "My name is Dr. Ye,"
+three = "and I will be taking care of you today."
+print(r.one,two,three)
+```
+To get this greeting, the first thing I did was load the reticulate package in the R code chunk, along with assigning a word to "one". Then, in the python code chunk, I assigned words to "two" and "three". To create the phrase, I used the print() function. The r before "one" is meant to allow for the access of R-defined objects.
+
+
+![Bailey the Beluga Whale](./belugawhale.png)
+
+As my undergraduate college years come to a close, I often find myself looking back at my singing days. In second grade, I remember being in a classroom surrounded by some of my favorite people and soon to be good friends. We would meet up every day after school ended to sing songs out of a booklet our teacher had made us. One of my all time favorites, until this day, has been "Baby Beluga" by Raffi. With some knowledge of python, I thought it would be fun to count the number of times a different character appears in my favorite part of the song:
+
+"Baby beluga in the deep blue sea
+Swim so wild and you swim so free
+Heaven above and the sea below
+And a little white whale on the go"
+
+First, I created a function called count_chars() that can count characters in any string. In other words, it can count characters whenever and wherever.
+```{python}
+#create a function that can count characters in any sentence= count_chars
+def count_chars(sentence):  #argument will be string object
+    counts = {}             #new dictionary
+    for c in sentence:      #for each character in sentence
+        if c in counts:     #have we seen it before in this sentence?
+            counts[c]+=1    #if yes, increase count by 1
+        else:
+            counts[c]=1     #otherwise, set count
+            
+    for c in counts:
+        print(c, "appears", counts[c],"times")
+```
+
+Then, I applied the count_chars function to my favorite part of "Baby Beluga", and it went a little like this: 
+```{python}
+#using count_chars function
+new_sentence = "Baby beluga in the deep blue sea, Swim so wild and you swim so free, Heaven above and the sea below, And a little white whale on the go."
+count_chars(new_sentence)
+```
+  
