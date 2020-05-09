@@ -23,7 +23,7 @@ print(r.one,two,three)
 To get this greeting, the first thing I did was load the reticulate package in the R code chunk, along with assigning a word to "one". Then, in the python code chunk, I assigned words to "two" and "three". To create the phrase, I used the print() function. The r before "one" is meant to allow for the access of R-defined objects.
 
 
-![Bailey the Beluga Whale](./belugawhale.png)
+![Bailey the Beluga Whale](/blog/2020-05-08-python-is-rad_files/belugawhale.png)
 
 As my undergraduate college years come to a close, I often find myself looking back at my singing days. In second grade, I remember being in a classroom surrounded by some of my favorite people and soon to be good friends. We would meet up every day after school ended to sing songs out of a booklet our teacher had made us. One of my all time favorites, until this day, has been "Baby Beluga" by Raffi. With some knowledge of python, I thought it would be fun to count the number of times a different character appears in my favorite part of the song:
 
